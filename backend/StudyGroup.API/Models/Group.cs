@@ -15,5 +15,5 @@ public class Group
 
     public ICollection<JoinRequest> JoinRequests { get; set; } = new List<JoinRequest>();
     public ICollection<Material> Materials { get; set; } = new List<Material>();
-    public ICollection<DiscussionMessage> Messages { get; set; } = new List<DiscussionMessage>();
+    public ICollection<DiscussionMessage> DiscussionMessages { get; set; } = new List<DiscussionMessage>();
 }

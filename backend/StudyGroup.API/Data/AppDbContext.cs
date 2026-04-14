@@ -1,4 +1,4 @@
- using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using StudyGroup.API.Auth.Models;
 using StudyGroup.API.Models;
 
@@ -20,7 +20,9 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder mb)
     {
-        // ── UserRole composite key ──────────────────────────
+        base.OnModelCreating(mb);
+
+        // ── 1. UserRole composite key & relationships ──────────────────
         mb.Entity<UserRole>()
             .HasKey(ur => new { ur.UserId, ur.RoleId });
 
@@ -34,19 +36,64 @@ public class AppDbContext : DbContext
             .WithMany(r => r.UserRoles)
             .HasForeignKey(ur => ur.RoleId);
 
-        // ── Unique email ────────────────────────────────────
+        // ── 2. DiscussionMessage Relationships ──────────────────
+        mb.Entity<DiscussionMessage>(entity =>
+        {
+            entity.HasOne(m => m.Group)
+                .WithMany(g => g.DiscussionMessages)
+                .HasForeignKey(m => m.GroupId)
+                .OnDelete(DeleteBehavior.Cascade); 
+
+            entity.HasOne(m => m.Sender)
+                .WithMany() 
+                .HasForeignKey(m => m.SenderId)
+                .OnDelete(DeleteBehavior.NoAction); // حل الـ Cycle هنا
+        });
+
+        // ── 3. JoinRequest Relationships ──
+        mb.Entity<JoinRequest>(entity =>
+        {
+            entity.HasOne(jr => jr.Group)
+                .WithMany(g => g.JoinRequests)
+                .HasForeignKey(jr => jr.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(jr => jr.User)
+                .WithMany(u => u.JoinRequests)
+                .HasForeignKey(jr => jr.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
+        });
+
+        // ── 4. Group Owner Relationship ──────────────────────────────
+        mb.Entity<Group>(entity =>
+        {
+            entity.HasOne(g => g.Owner)
+                .WithMany(u => u.OwnedGroups)
+                .HasForeignKey(g => g.OwnerId)
+                .OnDelete(DeleteBehavior.NoAction);
+        });
+
+        // ── 5. Notification Relationships ──────────────────
+        mb.Entity<Notification>(entity =>
+        {
+            entity.HasOne(n => n.User)
+                .WithMany()
+                .HasForeignKey(n => n.UserId)
+                .OnDelete(DeleteBehavior.NoAction); 
+        });
+
+        // ── 6. Unique email & Seed Roles ────────────────────────────────────
         mb.Entity<User>()
             .HasIndex(u => u.Email)
             .IsUnique();
 
-        // ── Seed roles ──────────────────────────────────────
         mb.Entity<Role>().HasData(
             new Role { Id = 1, Name = "Admin" },
             new Role { Id = 2, Name = "GroupCreator" },
             new Role { Id = 3, Name = "Student" }
         );
 
-        // ── JoinRequest enum storage ────────────────────────
+        // ── 7. JoinRequest enum storage ────────────────────────
         mb.Entity<JoinRequest>()
             .Property(j => j.Status)
             .HasConversion<string>();
