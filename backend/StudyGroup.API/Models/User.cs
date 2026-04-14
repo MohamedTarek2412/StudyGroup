@@ -1,5 +1,5 @@
  namespace StudyGroup.API.Models;
-
+ using StudyGroup.API.Auth.Models;
 public class User
 {
     public Guid Id { get; set; } = Guid.NewGuid();
