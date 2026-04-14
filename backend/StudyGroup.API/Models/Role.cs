@@ -1,5 +1,3 @@
- namespace StudyGroup.API.Models;
-
 namespace StudyGroup.API.Models;
 
 public class Role
