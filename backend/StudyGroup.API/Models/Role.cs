@@ -1,10 +1,11 @@
  namespace StudyGroup.API.Models;
 
-public class UserRole
-{
-    public Guid UserId { get; set; }
-    public User User { get; set; } = null!;
+namespace StudyGroup.API.Models;
 
-    public int RoleId { get; set; }
-    public Role Role { get; set; } = null!;
+public class Role
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+
+    public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
 }
