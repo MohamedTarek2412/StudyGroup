@@ -140,4 +140,9 @@ const styles = {
   },
 };
 
+import AdminDashboardPage from "../pages/AdminDashboardPage";
+{
+  path: "/admin",
+  element: <AdminDashboardPage />
+}
 export default AppRouter; 
