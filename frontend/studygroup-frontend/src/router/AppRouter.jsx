@@ -139,10 +139,4 @@ const styles = {
     padding: "24px 16px",
   },
 };
-
-import AdminDashboardPage from "../pages/AdminDashboardPage";
-{
-  path: "/admin",
-  element: <AdminDashboardPage />
-}
 export default AppRouter; 
