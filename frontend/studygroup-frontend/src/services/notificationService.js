@@ -1,7 +1,5 @@
 import api from "./api";
 
-const NOTIFICATIONS_BASE_PATH = "/notifications";
-
 function normalizeAxiosError(error) {
   const status = error?.response?.status;
   const message =
@@ -11,27 +9,31 @@ function normalizeAxiosError(error) {
   return { status, message, raw: error };
 }
 
-// 🔹 Get my notifications
 export async function getNotifications() {
   try {
-    const response = await api.get(NOTIFICATIONS_BASE_PATH);
+    const response = await api.get("/notifications");
     return response.data;
   } catch (error) {
     throw normalizeAxiosError(error);
   }
 }
 
-// 🔹 Mark as read
 export async function markAsRead(notificationId) {
   try {
-    await api.put(`${NOTIFICATIONS_BASE_PATH}/${notificationId}/read`);
+    await api.patch(`/notifications/${notificationId}/read`);
     return true;
   } catch (error) {
     throw normalizeAxiosError(error);
   }
 }
 
-export default {
-  getNotifications,
-  markAsRead,
-}; 
+export async function markAllAsRead() {
+  try {
+    await api.patch("/notifications/read-all");
+    return true;
+  } catch (error) {
+    throw normalizeAxiosError(error);
+  }
+}
+
+export default { getNotifications, markAsRead, markAllAsRead };
