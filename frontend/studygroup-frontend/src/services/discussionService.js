@@ -1,7 +1,5 @@
 import api from "./api";
 
-const DISCUSSIONS_BASE_PATH = "/discussions";
-
 function normalizeAxiosError(error) {
   const status = error?.response?.status;
   const message =
@@ -11,41 +9,35 @@ function normalizeAxiosError(error) {
   return { status, message, raw: error };
 }
 
-// 🔹 Get messages for a group
-export async function getGroupMessages(groupId) {
+export async function getMessages(groupId, page = 1, pageSize = 50) {
   try {
-    const response = await api.get(`${DISCUSSIONS_BASE_PATH}/group/${groupId}`);
+    const response = await api.get(`/groups/${groupId}/discussions`, {
+      params: { page, pageSize },
+    });
     return response.data;
   } catch (error) {
     throw normalizeAxiosError(error);
   }
 }
 
-// 🔹 Send message
-export async function sendMessage(groupId, payload) {
+export async function sendMessage(groupId, content) {
   try {
-    const response = await api.post(
-      `${DISCUSSIONS_BASE_PATH}/group/${groupId}`,
-      payload
-    );
+    const response = await api.post(`/groups/${groupId}/discussions`, {
+      content,
+    });
     return response.data;
   } catch (error) {
     throw normalizeAxiosError(error);
   }
 }
 
-// 🔹 Delete message
-export async function deleteMessage(messageId) {
+export async function deleteMessage(groupId, messageId) {
   try {
-    await api.delete(`${DISCUSSIONS_BASE_PATH}/${messageId}`);
+    await api.delete(`/groups/${groupId}/discussions/${messageId}`);
     return true;
   } catch (error) {
     throw normalizeAxiosError(error);
   }
 }
 
-export default {
-  getGroupMessages,
-  sendMessage,
-  deleteMessage,
-}; 
+export default { getMessages, sendMessage, deleteMessage };
