@@ -1,48 +1,40 @@
-import { useEffect, useState } from "react";
-import notificationService from "../services/notificationService";
+import { useContext } from "react";
+import NotificationContext from "../context/NotificationContext";
+import { markAsRead, markAllAsRead, getNotifications } from "../services/notificationService";
 
-const mockNotifications = [
-  { id: 1, message: "New message in your group", isRead: false },
-  { id: 2, message: "Group approved ✅", isRead: true },
-];
+export function useNotifications() {
+  const ctx = useContext(NotificationContext);
+  if (!ctx) {
+    throw new Error("useNotifications must be used within a NotificationProvider");
+  }
 
-export default function useNotifications() {
-  const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  const fetchNotifications = async () => {
-    setLoading(true);
-    try {
-      const data = await notificationService.getNotifications();
-      setNotifications(data);
-    } catch {
-      setNotifications(mockNotifications);
-    } finally {
-      setLoading(false);
-    }
+  const handleMarkAsRead = async (id) => {
+    await markAsRead(id);
+    ctx.markAsRead(id);
   };
 
-  const markAsRead = async (id) => {
-    try {
-      await notificationService.markAsRead(id);
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
-      );
-    } catch {
-      // fallback
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
-      );
-    }
+  const handleMarkAllAsRead = async () => {
+    await markAllAsRead();
+    ctx.markAllAsRead();
   };
 
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
+  const loadNotifications = async () => {
+    const data = await getNotifications();
+    // Sync context with persisted notifications
+    if (Array.isArray(data)) {
+      data.forEach((n) => {
+        if (!n.isRead) ctx.addNotification(n);
+      });
+    }
+    return data;
+  };
 
   return {
-    notifications,
-    loading,
-    markAsRead,
+    ...ctx,
+    markAsRead: handleMarkAsRead,
+    markAllAsRead: handleMarkAllAsRead,
+    loadNotifications,
   };
-} 
+}
+
+export default useNotifications;
