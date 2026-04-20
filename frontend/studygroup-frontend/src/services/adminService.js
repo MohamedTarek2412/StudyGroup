@@ -1,7 +1,5 @@
 import api from "./api";
 
-const ADMIN_BASE_PATH = "/admin";
-
 function normalizeAxiosError(error) {
   const status = error?.response?.status;
   const message =
@@ -11,38 +9,49 @@ function normalizeAxiosError(error) {
   return { status, message, raw: error };
 }
 
-// 🔹 Pending creators
-export async function getPendingCreators() {
-  try {
-    const response = await api.get(`${ADMIN_BASE_PATH}/creators`);
-    return response.data;
-  } catch (error) {
-    throw normalizeAxiosError(error);
-  }
-}
-
-// 🔹 Pending groups
 export async function getPendingGroups() {
   try {
-    const response = await api.get(`${ADMIN_BASE_PATH}/groups`);
+    const response = await api.get("/admin/groups/pending");
     return response.data;
   } catch (error) {
     throw normalizeAxiosError(error);
   }
 }
 
-// 🔹 Approve group
 export async function approveGroup(groupId) {
   try {
-    await api.put(`${ADMIN_BASE_PATH}/groups/${groupId}/approve`);
+    await api.post(`/admin/groups/${groupId}/approve`);
     return true;
   } catch (error) {
     throw normalizeAxiosError(error);
   }
 }
 
-export default {
-  getPendingCreators,
-  getPendingGroups,
-  approveGroup,
-}; 
+export async function rejectGroup(groupId) {
+  try {
+    await api.post(`/admin/groups/${groupId}/reject`);
+    return true;
+  } catch (error) {
+    throw normalizeAxiosError(error);
+  }
+}
+
+export async function getAllUsers() {
+  try {
+    const response = await api.get("/admin/users");
+    return response.data;
+  } catch (error) {
+    throw normalizeAxiosError(error);
+  }
+}
+
+export async function approveCreator(userId) {
+  try {
+    await api.post(`/admin/users/${userId}/approve-creator`);
+    return true;
+  } catch (error) {
+    throw normalizeAxiosError(error);
+  }
+}
+
+export default { getPendingGroups, approveGroup, rejectGroup, getAllUsers, approveCreator };
