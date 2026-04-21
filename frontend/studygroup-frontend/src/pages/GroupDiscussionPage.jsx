@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
-import { useDiscussion } from "../hooks/useDiscussion";
+import  useAuth from "../hooks/useAuth";
+import useDiscussion  from "../hooks/useDiscussion";
 import { getMaterials } from "../services/materialService";
 import MessageList from "../components/discussion/MessageList";
 import MessageInput from "../components/discussion/MessageInput";
