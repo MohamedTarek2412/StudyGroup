@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNotifications } from "../../context/NotificationContext";
-import { markAsRead as apiMarkAsRead, markAllAsRead as apiMarkAllAsRead, getNotifications } from "../../services/notificationService";
+import { getNotifications } from "../../services/notificationService";
 import { formatRelativeTime } from "../../utils/formatDate";
 
 const NotificationBell = () => {
@@ -34,13 +34,11 @@ const NotificationBell = () => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const handleMarkAsRead = async (id) => {
-    await apiMarkAsRead(id);
+  const handleMarkAsRead = (id) => {
     markAsRead(id);
   };
 
-  const handleMarkAllAsRead = async () => {
-    await apiMarkAllAsRead();
+  const handleMarkAllAsRead = () => {
     markAllAsRead();
   };
 

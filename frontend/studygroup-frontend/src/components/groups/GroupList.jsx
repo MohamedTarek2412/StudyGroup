@@ -6,15 +6,15 @@ const GroupList = ({ groups, emptyTitle = "No groups found", emptyHint }) => {
 
   if (items.length === 0) {
     return (
-      <div style={styles.empty}>
-        <h3 style={styles.emptyTitle}>{emptyTitle}</h3>
-        {emptyHint ? <p style={styles.emptyHint}>{emptyHint}</p> : null}
+      <div className="card" style={{ textAlign: "center", padding: "40px 24px", border: "1px dashed var(--border-color)" }}>
+        <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "800", color: "var(--text-main)" }}>{emptyTitle}</h3>
+        {emptyHint && <p style={{ margin: "8px 0 0", fontSize: "14px", color: "var(--text-muted)" }}>{emptyHint}</p>}
       </div>
     );
   }
 
   return (
-    <div style={styles.grid}>
+    <div className="grid-cols-2">
       {items.map((g) => (
         <GroupCard key={g.id} group={g} />
       ))}
@@ -22,33 +22,4 @@ const GroupList = ({ groups, emptyTitle = "No groups found", emptyHint }) => {
   );
 };
 
-const styles = {
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-    gap: "16px",
-  },
-  empty: {
-    border: "1px dashed #d1d5db",
-    background: "#ffffff",
-    borderRadius: "14px",
-    padding: "28px 18px",
-    textAlign: "center",
-  },
-  emptyTitle: {
-    margin: 0,
-    fontSize: "15px",
-    fontWeight: "800",
-    color: "#111827",
-  },
-  emptyHint: {
-    margin: "6px 0 0",
-    fontSize: "13px",
-    color: "#6b7280",
-    lineHeight: 1.6,
-  },
-};
-
 export default GroupList;
-
- 

@@ -15,6 +15,9 @@ const EditGroupPage = () => {
     name: "",
     subject: "",
     description: "",
+    location: "",
+    meetingType: "Online",
+    meetingSchedule: "",
     maxMembers: 30,
   });
 
@@ -31,6 +34,9 @@ const EditGroupPage = () => {
           name: g?.name || "",
           subject: g?.subject || "",
           description: g?.description || "",
+          location: g?.location || "",
+          meetingType: g?.meetingType || "Online",
+          meetingSchedule: g?.meetingSchedule || "",
           maxMembers: Number.isFinite(g?.maxMembers) ? g.maxMembers : 30,
         });
       } catch (err) {
@@ -52,6 +58,10 @@ const EditGroupPage = () => {
     if (!form.name.trim()) errors.name = "Name is required.";
     if (!form.subject.trim()) errors.subject = "Subject is required.";
     if (!form.description.trim()) errors.description = "Description is required.";
+    if (!form.meetingSchedule.trim()) errors.meetingSchedule = "Schedule is required.";
+    if (form.meetingType === "Offline" && !form.location.trim()) {
+      errors.location = "Location is required for offline meetings.";
+    }
     const max = Number(form.maxMembers);
     if (!Number.isFinite(max) || max < 1) errors.maxMembers = "Max members must be at least 1.";
     return errors;
@@ -73,6 +83,9 @@ const EditGroupPage = () => {
         name: form.name.trim(),
         subject: form.subject.trim(),
         description: form.description.trim(),
+        location: form.location.trim(),
+        meetingType: form.meetingType,
+        meetingSchedule: form.meetingSchedule.trim(),
         maxMembers: Number(form.maxMembers),
       };
       await groupService.updateGroup(id, payload);
@@ -87,169 +100,123 @@ const EditGroupPage = () => {
   if (loading) return <LoadingSpinner fullScreen />;
 
   return (
-    <div style={styles.page}>
-      <div style={styles.header}>
+    <div className="container mt-6">
+      <div className="page-header">
         <div>
-          <h1 style={styles.title}>Edit Group</h1>
-          <p style={styles.subTitle}>Update group details. Changes take effect immediately.</p>
+          <h1 className="page-title">Edit Group</h1>
+          <p className="page-subtitle">Update group details. Changes take effect immediately.</p>
         </div>
-        <div style={styles.headerActions}>
-          <Link to={`/groups/${id}`} style={styles.secondaryLink}>
+        <div className="flex gap-2">
+          <Link to={`/groups/${id}`} className="btn btn-secondary">
             Back to group
           </Link>
-          <Link to="/dashboard" style={styles.secondaryLink}>
+          <Link to="/dashboard" className="btn btn-secondary">
             Dashboard
           </Link>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} style={styles.card}>
-        {error ? (
-          <div style={styles.alertError}>
-            <strong style={styles.alertTitle}>Couldn’t update group</strong>
-            <div style={styles.alertText}>{error}</div>
+      <form onSubmit={handleSubmit} className="card">
+        {error && (
+          <div className="alert alert-error">
+            <strong className="alert-title">Couldn’t update group</strong>
+            <span className="alert-desc">{error}</span>
           </div>
-        ) : null}
+        )}
 
-        <div style={styles.grid}>
-          <label style={styles.label}>
-            Name
+        <div className="grid-cols-2">
+          <div className="form-group">
+            <label className="form-label">Name</label>
             <input
+              className="form-input"
               value={form.name}
               onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-              style={styles.input}
               disabled={submitting}
             />
-            {validation.name ? <div style={styles.fieldError}>{validation.name}</div> : null}
-          </label>
+            {validation.name && <div className="form-error">{validation.name}</div>}
+          </div>
 
-          <label style={styles.label}>
-            Subject
+          <div className="form-group">
+            <label className="form-label">Subject</label>
             <input
+              className="form-input"
               value={form.subject}
               onChange={(e) => setForm((p) => ({ ...p, subject: e.target.value }))}
-              style={styles.input}
               disabled={submitting}
             />
-            {validation.subject ? <div style={styles.fieldError}>{validation.subject}</div> : null}
-          </label>
-
-          <label style={{ ...styles.label, gridColumn: "1 / -1" }}>
-            Description
-            <textarea
-              value={form.description}
-              onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
-              style={styles.textarea}
-              disabled={submitting}
-            />
-            {validation.description ? <div style={styles.fieldError}>{validation.description}</div> : null}
-          </label>
-
-          <label style={styles.label}>
-            Max members
-            <input
-              type="number"
-              min={1}
-              value={form.maxMembers}
-              onChange={(e) => setForm((p) => ({ ...p, maxMembers: e.target.value }))}
-              style={styles.input}
-              disabled={submitting}
-            />
-            {validation.maxMembers ? <div style={styles.fieldError}>{validation.maxMembers}</div> : null}
-          </label>
+            {validation.subject && <div className="form-error">{validation.subject}</div>}
+          </div>
         </div>
 
-        <div style={styles.actions}>
-          <button type="submit" disabled={!canSubmit} style={styles.primaryBtn}>
+        <div className="form-group">
+          <label className="form-label">Description</label>
+          <textarea
+            className="form-textarea"
+            value={form.description}
+            onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+            disabled={submitting}
+          />
+          {validation.description && <div className="form-error">{validation.description}</div>}
+        </div>
+
+        <div className="grid-cols-3">
+          <div className="form-group">
+            <label className="form-label">Meeting Type</label>
+            <select
+              className="form-select"
+              value={form.meetingType}
+              onChange={(e) => setForm((p) => ({ ...p, meetingType: e.target.value }))}
+              disabled={submitting}
+            >
+              <option value="Online">Online</option>
+              <option value="Offline">Offline</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Location (or Link)</label>
+            <input
+              className="form-input"
+              value={form.location}
+              onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))}
+              disabled={submitting}
+            />
+            {validation.location && <div className="form-error">{validation.location}</div>}
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Meeting Schedule</label>
+            <input
+              className="form-input"
+              value={form.meetingSchedule}
+              onChange={(e) => setForm((p) => ({ ...p, meetingSchedule: e.target.value }))}
+              disabled={submitting}
+            />
+            {validation.meetingSchedule && <div className="form-error">{validation.meetingSchedule}</div>}
+          </div>
+        </div>
+
+        <div className="form-group" style={{ maxWidth: "300px" }}>
+          <label className="form-label">Max members</label>
+          <input
+            type="number"
+            min={1}
+            className="form-input"
+            value={form.maxMembers}
+            onChange={(e) => setForm((p) => ({ ...p, maxMembers: e.target.value }))}
+            disabled={submitting}
+          />
+          {validation.maxMembers && <div className="form-error">{validation.maxMembers}</div>}
+        </div>
+
+        <div className="flex justify-end mt-4">
+          <button type="submit" disabled={!canSubmit} className="btn btn-primary">
             {submitting ? "Saving..." : "Save changes"}
           </button>
         </div>
       </form>
     </div>
   );
-};
-
-const styles = {
-  page: { display: "flex", flexDirection: "column", gap: "16px" },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    gap: "16px",
-    flexWrap: "wrap",
-  },
-  headerActions: { display: "flex", gap: "10px", flexWrap: "wrap" },
-  title: { margin: 0, fontSize: "26px", fontWeight: "900", color: "#111827" },
-  subTitle: { margin: "6px 0 0", fontSize: "14px", color: "#6b7280", lineHeight: 1.6 },
-  card: {
-    background: "#ffffff",
-    border: "1px solid #e5e7eb",
-    borderRadius: "14px",
-    padding: "16px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "14px",
-  },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-    gap: "12px",
-  },
-  label: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px",
-    fontSize: "12px",
-    fontWeight: "800",
-    color: "#374151",
-  },
-  input: {
-    border: "1px solid #e5e7eb",
-    borderRadius: "10px",
-    padding: "10px 12px",
-    fontSize: "14px",
-    outline: "none",
-  },
-  textarea: {
-    border: "1px solid #e5e7eb",
-    borderRadius: "10px",
-    padding: "10px 12px",
-    fontSize: "14px",
-    outline: "none",
-    minHeight: "120px",
-    resize: "vertical",
-  },
-  fieldError: { color: "#b91c1c", fontSize: "12px", fontWeight: "700" },
-  actions: { display: "flex", justifyContent: "flex-end" },
-  primaryBtn: {
-    background: "#4f46e5",
-    color: "#ffffff",
-    border: "none",
-    borderRadius: "10px",
-    padding: "10px 14px",
-    cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: "900",
-  },
-  secondaryLink: {
-    background: "#ffffff",
-    color: "#374151",
-    border: "1px solid #e5e7eb",
-    borderRadius: "10px",
-    padding: "10px 14px",
-    textDecoration: "none",
-    fontSize: "14px",
-    fontWeight: "900",
-    display: "inline-block",
-  },
-  alertError: {
-    background: "#fff1f2",
-    border: "1px solid #fecdd3",
-    borderRadius: "14px",
-    padding: "12px 14px",
-  },
-  alertTitle: { color: "#111827", fontSize: "13px" },
-  alertText: { marginTop: "4px", fontSize: "13px", color: "#374151", lineHeight: 1.6 },
 };
 
 export default EditGroupPage;

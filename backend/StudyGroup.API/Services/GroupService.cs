@@ -9,9 +9,9 @@ public class GroupService : IGroupService
     private readonly IGroupRepository _groups;
     public GroupService(IGroupRepository groups) => _groups = groups;
 
-    public async Task<List<GroupListItemDto>> GetApprovedGroupsAsync(string? subject, string? search)
+    public async Task<List<GroupListItemDto>> GetApprovedGroupsAsync(string? subject, string? search, string? location, string? meetingTime)
     {
-        var groups = await _groups.GetAllApprovedAsync(subject, search);
+        var groups = await _groups.GetAllApprovedAsync(subject, search, location, meetingTime);
         return groups.Select(Map).ToList();
     }
 
@@ -29,6 +29,9 @@ public class GroupService : IGroupService
             Name = dto.Name,
             Description = dto.Description,
             Subject = dto.Subject,
+            Location = dto.Location,
+            MeetingType = dto.MeetingType,
+            MeetingSchedule = dto.MeetingSchedule,
             MaxMembers = dto.MaxMembers,
             OwnerId = ownerId,
             IsApproved = false, // awaits admin approval
@@ -49,6 +52,9 @@ public class GroupService : IGroupService
         group.Name = dto.Name;
         group.Description = dto.Description;
         group.Subject = dto.Subject;
+        group.Location = dto.Location;
+        group.MeetingType = dto.MeetingType;
+        group.MeetingSchedule = dto.MeetingSchedule;
         group.MaxMembers = dto.MaxMembers;
 
         await _groups.UpdateAsync(group);
@@ -73,11 +79,11 @@ public class GroupService : IGroupService
     }
 
     private static GroupListItemDto Map(Group g) => new(
-        g.Id, g.Name, g.Subject, g.Description, g.MaxMembers,
+        g.Id, g.Name, g.Subject, g.Description, g.Location, g.MeetingType, g.MeetingSchedule, g.MaxMembers,
         g.IsApproved, g.Owner.FullName, g.CreatedAt);
 
     private static GroupDetailsDto MapDetails(Group g) => new(
-        g.Id, g.Name, g.Subject, g.Description, g.MaxMembers,
+        g.Id, g.Name, g.Subject, g.Description, g.Location, g.MeetingType, g.MeetingSchedule, g.MaxMembers,
         g.IsApproved, g.Owner.FullName, g.OwnerId, g.CreatedAt,
         g.JoinRequests.Count(jr => jr.Status == JoinRequestStatus.Approved));
 }

@@ -4,7 +4,7 @@ namespace StudyGroup.API.Services;
 
 public interface IGroupService
 {
-    Task<List<GroupListItemDto>> GetApprovedGroupsAsync(string? subject, string? search);
+    Task<List<GroupListItemDto>> GetApprovedGroupsAsync(string? subject, string? search, string? location, string? meetingTime);
     Task<GroupDetailsDto> GetGroupByIdAsync(Guid id);
     Task<GroupDetailsDto> CreateGroupAsync(GroupCreateDto dto, Guid ownerId);
     Task<GroupDetailsDto> UpdateGroupAsync(Guid id, GroupUpdateDto dto, Guid requesterId);

@@ -10,30 +10,20 @@ function normalizeAxiosError(error) {
 }
 
 export async function getNotifications() {
-  try {
-    const response = await api.get("/notifications");
-    return response.data;
-  } catch (error) {
-    throw normalizeAxiosError(error);
-  }
+  // NOTE: Current backend exposes notifications via SignalR hub (/hubs/notifications)
+  // and does not provide REST endpoints under /api/notifications in Swagger.
+  // So we return an empty list to avoid noisy 404s.
+  return [];
 }
 
 export async function markAsRead(notificationId) {
-  try {
-    await api.patch(`/notifications/${notificationId}/read`);
-    return true;
-  } catch (error) {
-    throw normalizeAxiosError(error);
-  }
+  // No REST endpoint available in backend for this action.
+  return true;
 }
 
 export async function markAllAsRead() {
-  try {
-    await api.patch("/notifications/read-all");
-    return true;
-  } catch (error) {
-    throw normalizeAxiosError(error);
-  }
+  // No REST endpoint available in backend for this action.
+  return true;
 }
 
 export default { getNotifications, markAsRead, markAllAsRead };

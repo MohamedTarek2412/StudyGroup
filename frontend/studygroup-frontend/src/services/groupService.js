@@ -17,6 +17,8 @@ export async function browseGroups(params = {}) {
       params: {
         subject: params.subject || undefined,
         search: params.search || undefined,
+        location: params.location || undefined,
+        meetingTime: params.meetingTime || undefined,
       },
     });
     return response.data;

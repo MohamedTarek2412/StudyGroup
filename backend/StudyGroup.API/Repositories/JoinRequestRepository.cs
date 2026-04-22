@@ -22,7 +22,7 @@ public class JoinRequestRepository : IJoinRequestRepository
                         .Where(jr => jr.GroupId == groupId).ToListAsync();
 
     public Task<List<JoinRequest>> GetByUserAsync(Guid userId) =>
-        _db.JoinRequests.Include(jr => jr.Group)
+        _db.JoinRequests.Include(jr => jr.User).Include(jr => jr.Group)
                         .Where(jr => jr.UserId == userId).ToListAsync();
 
     public async Task AddAsync(JoinRequest request) { await _db.JoinRequests.AddAsync(request); await _db.SaveChangesAsync(); }

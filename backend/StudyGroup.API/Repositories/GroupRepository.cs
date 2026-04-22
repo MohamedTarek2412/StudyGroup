@@ -8,43 +8,74 @@ namespace StudyGroup.API.Repositories;
 public class GroupRepository : IGroupRepository
 {
     private readonly AppDbContext _db;
-    public GroupRepository(AppDbContext db) => _db = db;
 
-    public Task<Group?> GetByIdAsync(Guid id) =>
-        _db.Groups.Include(g => g.Owner)
-                  .Include(g => g.JoinRequests)
-                  .FirstOrDefaultAsync(g => g.Id == id);
-
-    public Task<List<Group>> GetAllApprovedAsync(string? subject, string? search)
+    public GroupRepository(AppDbContext db)
     {
-        var q = _db.Groups.Include(g => g.Owner)
-                          .Include(g => g.JoinRequests)
-                          .Where(g => g.IsApproved);
-
-        if (!string.IsNullOrWhiteSpace(subject))
-            q = q.Where(g => g.Subject.ToLower().Contains(subject.ToLower()));
-
-        if (!string.IsNullOrWhiteSpace(search))
-            q = q.Where(g => g.Name.ToLower().Contains(search.ToLower()) ||
-                              g.Description.ToLower().Contains(search.ToLower()));
-
-        return q.OrderByDescending(g => g.CreatedAt).ToListAsync();
+        _db = db;
     }
 
-    public Task<List<Group>> GetByOwnerAsync(Guid ownerId) =>
-        _db.Groups.Include(g => g.Owner)
-                  .Include(g => g.JoinRequests)
-                  .Where(g => g.OwnerId == ownerId)
-                  .OrderByDescending(g => g.CreatedAt)
-                  .ToListAsync();
+    public async Task<List<Group>> GetAllApprovedAsync(string? subject, string? search, string? location, string? meetingTime)
+    {
+        var query = _db.Groups
+            .Include(g => g.Owner)
+            .Where(g => g.IsApproved);
 
-    public Task<List<Group>> GetPendingAsync() =>
-        _db.Groups.Include(g => g.Owner)
-                  .Where(g => !g.IsApproved)
-                  .OrderBy(g => g.CreatedAt)
-                  .ToListAsync();
+        if (!string.IsNullOrWhiteSpace(subject))
+            query = query.Where(g => g.Subject.Contains(subject));
 
-    public async Task AddAsync(Group group) { await _db.Groups.AddAsync(group); await _db.SaveChangesAsync(); }
-    public async Task UpdateAsync(Group group) { _db.Groups.Update(group); await _db.SaveChangesAsync(); }
-    public async Task DeleteAsync(Group group) { _db.Groups.Remove(group); await _db.SaveChangesAsync(); }
+        if (!string.IsNullOrWhiteSpace(search))
+            query = query.Where(g => g.Name.Contains(search) || g.Description.Contains(search));
+
+        if (!string.IsNullOrWhiteSpace(location))
+            query = query.Where(g => g.Location != null && g.Location.Contains(location));
+
+        if (!string.IsNullOrWhiteSpace(meetingTime))
+            query = query.Where(g => g.MeetingSchedule != null && g.MeetingSchedule.Contains(meetingTime));
+
+        return await query.OrderByDescending(g => g.CreatedAt).ToListAsync();
+    }
+
+    public async Task<List<Group>> GetPendingAsync()
+    {
+        return await _db.Groups
+            .Include(g => g.Owner)
+            .Where(g => !g.IsApproved)
+            .OrderByDescending(g => g.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<List<Group>> GetByOwnerAsync(Guid ownerId)
+    {
+        return await _db.Groups
+            .Include(g => g.Owner)
+            .Where(g => g.OwnerId == ownerId)
+            .OrderByDescending(g => g.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<Group?> GetByIdAsync(Guid id)
+    {
+        return await _db.Groups
+            .Include(g => g.Owner)
+            .Include(g => g.JoinRequests)
+            .FirstOrDefaultAsync(g => g.Id == id);
+    }
+
+    public async Task AddAsync(Group group)
+    {
+        _db.Groups.Add(group);
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task UpdateAsync(Group group)
+    {
+        _db.Groups.Update(group);
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(Group group)
+    {
+        _db.Groups.Remove(group);
+        await _db.SaveChangesAsync();
+    }
 }

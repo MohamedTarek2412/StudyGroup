@@ -23,8 +23,22 @@ public class JoinRequestService : IJoinRequestService
             throw new InvalidOperationException("Group is not active.");
 
         var existing = await _jrRepo.GetByUserAndGroupAsync(userId, groupId);
-        if (existing != null)
-            throw new InvalidOperationException("Already requested to join this group.");
+        if (existing is not null)
+        {
+            switch (existing.Status)
+            {
+                case JoinRequestStatus.Pending:
+                    throw new InvalidOperationException("You already have a pending join request for this group.");
+                case JoinRequestStatus.Approved:
+                    throw new InvalidOperationException("You are already a member of this group.");
+                case JoinRequestStatus.Rejected:
+                    existing.Status = JoinRequestStatus.Pending;
+                    existing.CreatedAt = DateTime.UtcNow;
+                    await _jrRepo.UpdateAsync(existing);
+                    var reopened = await _jrRepo.GetByIdAsync(existing.Id);
+                    return Map(reopened!);
+            }
+        }
 
         var jr = new JoinRequest { GroupId = groupId, UserId = userId };
         await _jrRepo.AddAsync(jr);

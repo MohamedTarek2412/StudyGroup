@@ -1,81 +1,33 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Home, ArrowLeft } from "lucide-react";
 
 const NotFoundPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div style={styles.page}>
-      <h1 style={styles.code}>404</h1>
-      <h2 style={styles.title}>Page not found</h2>
-      <p style={styles.desc}>
-        The page you're looking for doesn't exist or has been moved.
-      </p>
-      <div style={styles.btns}>
-        <button onClick={() => navigate(-1)} style={styles.btnOutline}>
-          Go back
-        </button>
-        <Link to="/" style={styles.btnPrimary}>
-          Back to home
-        </Link>
+    <div className="not-found">
+      <div className="not-found__inner">
+        <div className="not-found__codes" aria-hidden>
+          <span className="not-found__digit">4</span>
+          <span className="not-found__digit not-found__digit--accent">0</span>
+          <span className="not-found__digit">4</span>
+        </div>
+        <h1 className="not-found__title">Page not found</h1>
+        <p className="not-found__desc">The page you&rsquo;re looking for doesn&rsquo;t exist or was moved.</p>
+        <div className="not-found__actions">
+          <button type="button" onClick={() => navigate(-1)} className="btn btn-secondary">
+            <ArrowLeft size={16} aria-hidden />
+            Go back
+          </button>
+          <Link to="/" className="btn btn-primary" style={{ background: "var(--gradient-primary)" }}>
+            <Home size={16} aria-hidden />
+            Home
+          </Link>
+        </div>
       </div>
     </div>
   );
 };
 
-const styles = {
-  page: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: "60vh",
-    textAlign: "center",
-    gap: "12px",
-    padding: "24px",
-  },
-  code: {
-    fontSize: "80px",
-    fontWeight: "800",
-    color: "#e5e7eb",
-    margin: 0,
-    lineHeight: 1,
-  },
-  title: {
-    fontSize: "24px",
-    fontWeight: "700",
-    color: "#111827",
-    margin: 0,
-  },
-  desc: {
-    fontSize: "15px",
-    color: "#6b7280",
-    margin: 0,
-  },
-  btns: {
-    display: "flex",
-    gap: "12px",
-    marginTop: "8px",
-  },
-  btnPrimary: {
-    background: "#4f46e5",
-    color: "#ffffff",
-    padding: "10px 24px",
-    borderRadius: "8px",
-    textDecoration: "none",
-    fontSize: "14px",
-    fontWeight: "600",
-  },
-  btnOutline: {
-    background: "#ffffff",
-    color: "#374151",
-    padding: "10px 24px",
-    borderRadius: "8px",
-    border: "1px solid #d1d5db",
-    fontSize: "14px",
-    fontWeight: "600",
-    cursor: "pointer",
-  },
-};
-
-export default NotFoundPage; 
+export default NotFoundPage;

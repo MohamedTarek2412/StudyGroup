@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { Search } from "lucide-react";
 
 const GroupSearchBar = ({
   value,
@@ -28,50 +29,24 @@ const GroupSearchBar = ({
         e.preventDefault();
         if (typeof onSubmit === "function") onSubmit(text);
       }}
-      style={styles.form}
+      className="flex gap-3 items-center w-full"
     >
-      <input
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder={placeholder}
-        disabled={disabled}
-        style={styles.input}
-      />
-      <button type="submit" disabled={disabled} style={styles.btn}>
+      <div style={{ position: "relative", flex: 1 }}>
+        <Search size={16} style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
+        <input
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder={placeholder}
+          disabled={disabled}
+          className="form-input"
+          style={{ paddingLeft: "38px" }}
+        />
+      </div>
+      <button type="submit" disabled={disabled} className="btn btn-primary">
         Search
       </button>
     </form>
   );
 };
 
-const styles = {
-  form: {
-    display: "flex",
-    gap: "10px",
-    alignItems: "center",
-    width: "100%",
-  },
-  input: {
-    flex: 1,
-    border: "1px solid #e5e7eb",
-    borderRadius: "10px",
-    padding: "10px 12px",
-    fontSize: "14px",
-    outline: "none",
-  },
-  btn: {
-    background: "#4f46e5",
-    color: "#ffffff",
-    border: "none",
-    borderRadius: "10px",
-    padding: "10px 14px",
-    cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: "700",
-    whiteSpace: "nowrap",
-  },
-};
-
 export default GroupSearchBar;
-
- 

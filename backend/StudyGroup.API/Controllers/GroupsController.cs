@@ -15,14 +15,33 @@ public class GroupsController : ControllerBase
     public GroupsController(IGroupService groups) => _groups = groups;
 
     [HttpGet]
-    [Authorize]
-    public async Task<IActionResult> Browse([FromQuery] string? subject, [FromQuery] string? search)
-        => Ok(await _groups.GetApprovedGroupsAsync(subject, search));
+    [AllowAnonymous]
+    public async Task<IActionResult> Browse([FromQuery] string? subject, [FromQuery] string? search, [FromQuery] string? location, [FromQuery] string? meetingTime)
+        => Ok(await _groups.GetApprovedGroupsAsync(subject, search, location, meetingTime));
 
     [HttpGet("{id:guid}")]
-    [Authorize]
+    [AllowAnonymous]
     public async Task<IActionResult> Get(Guid id)
-        => Ok(await _groups.GetGroupByIdAsync(id));
+    {
+        var group = await _groups.GetGroupByIdAsync(id);
+
+        // If group is not approved, only allow Admin or the group owner to view it.
+        if (!group.IsApproved)
+        {
+            var isAuthenticated = User?.Identity?.IsAuthenticated == true;
+            if (!isAuthenticated) return NotFound();
+
+            var role = (User is null) ? string.Empty : User.GetRole();
+            if (role == Roles.Admin) return Ok(group);
+
+            var userId = (User is null) ? Guid.Empty : User.GetUserId();
+            if (userId != Guid.Empty && userId == group.OwnerId) return Ok(group);
+
+            return NotFound();
+        }
+
+        return Ok(group);
+    }
 
     [HttpGet("mine")]
     [Authorize(Roles = Roles.GroupCreator)]

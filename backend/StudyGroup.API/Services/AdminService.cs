@@ -19,6 +19,7 @@ public class AdminService : IAdminService
         var groups = await _groups.GetPendingAsync();
         return groups.Select(g => new GroupListItemDto(
             g.Id, g.Name, g.Subject, g.Description,
+            g.Location, g.MeetingType, g.MeetingSchedule,
             g.MaxMembers, g.IsApproved, g.Owner.FullName, g.CreatedAt)).ToList();
     }
 

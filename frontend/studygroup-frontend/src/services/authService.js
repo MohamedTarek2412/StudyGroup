@@ -1,5 +1,5 @@
 import api from "./api";
-import { setTokens, clearTokens } from "../utils/authStorage";
+import { setTokens, clearTokens, getRefreshToken } from "../utils/authStorage";
 
 const AUTH_BASE_PATH = "/auth";
 
@@ -44,7 +44,10 @@ export const refresh = async () => {
 
 export const logout = async () => {
   try {
-    await api.post(`${AUTH_BASE_PATH}/logout`);
+    const refreshToken = getRefreshToken();
+    if (refreshToken) {
+      await api.post(`${AUTH_BASE_PATH}/logout`, { refreshToken });
+    }
   } catch {
     // حتى لو السيرفر وقع، نفضي التوكنز محلياً
   } finally {

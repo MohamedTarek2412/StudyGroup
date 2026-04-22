@@ -8,7 +8,7 @@ import React, {
 } from "react";
 import * as signalR from "@microsoft/signalr";
 
-import { getAccessToken } from "../utils/authStorage";
+import { AUTH_TOKENS_CHANGED_EVENT, getAccessToken } from "../utils/authStorage";
 
 import { SOCKET_URL } from "../config/env";
 
@@ -23,6 +23,7 @@ export const NotificationProvider = ({
   const [connection, setConnection] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isHubEnabled, setIsHubEnabled] = useState(() => Boolean(getAccessToken()));
 
   const addNotification = useCallback((notification) => {
     setNotifications((prev) => [notification, ...prev]);
@@ -60,26 +61,62 @@ export const NotificationProvider = ({
 
   useEffect(() => {
     let isMounted = true;
+    let connectionInstance = null;
 
+    const hasToken = () => Boolean(getAccessToken());
+    const logLevel =
+      process.env.NODE_ENV === "production"
+        ? signalR.LogLevel.Warning
+        : signalR.LogLevel.Information;
 
-    const connectionInstance = new signalR.HubConnectionBuilder()
-      .withUrl(hubUrl, {
-        accessTokenFactory: () => getAccessToken(),
-      })
-      .withAutomaticReconnect()
-      .configureLogging(signalR.LogLevel.Information)
-      .build();
+    const startOrStop = async () => {
+      const token = getAccessToken();
+      if (!token) {
+        setIsHubEnabled(false);
+        setConnection(null);
+        if (connectionInstance) {
+          try {
+            await connectionInstance.stop();
+          } catch {
+            // ignore
+          }
+        }
+        connectionInstance = null;
+        return;
+      }
 
-    connectionInstance.on("ReceiveNotification", (notification) => {
-      if (!isMounted) return;
-      addNotification({
-        id: notification.id || Date.now().toString(),
-        ...notification,
-        isRead: notification.isRead ?? false,
+      // If a connection already exists, replace it to pick up latest token
+      if (connectionInstance) {
+        try {
+          await connectionInstance.stop();
+        } catch {
+          // ignore
+        }
+        connectionInstance = null;
+      }
+
+      setIsHubEnabled(true);
+
+      connectionInstance = new signalR.HubConnectionBuilder()
+        .withUrl(hubUrl, {
+          accessTokenFactory: () => getAccessToken() || "",
+        })
+        // Longer keep-alive to reduce "abnormal closure" in dev environments (@microsoft/signalr v8: withServerTimeout, not *InMilliseconds)
+        .withServerTimeout(120000)
+        .withKeepAliveInterval(15000)
+        .withAutomaticReconnect([0, 2000, 10000, 30000, 60000])
+        .configureLogging(logLevel)
+        .build();
+
+      connectionInstance.on("ReceiveNotification", (notification) => {
+        if (!isMounted) return;
+        addNotification({
+          id: notification.id || Date.now().toString(),
+          ...notification,
+          isRead: notification.isRead ?? false,
+        });
       });
-    });
 
-    const startConnection = async () => {
       try {
         await connectionInstance.start();
         if (!isMounted) {
@@ -88,28 +125,52 @@ export const NotificationProvider = ({
         }
         setConnection(connectionInstance);
       } catch {
-        // ممكن تضيف هنا logging أو retry logic حسب احتياجك
+        // If API is down/restarting, client will try again on token updates / user refresh
+        setConnection(null);
       }
     };
 
-    startConnection();
+    // Initial bind (covers refresh with existing token)
+    void startOrStop();
+
+    const onTokenChanged = () => {
+      void startOrStop();
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === "visible" && hasToken()) {
+        // Best-effort: restart if the socket died while the tab slept
+        void startOrStop();
+      }
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener(AUTH_TOKENS_CHANGED_EVENT, onTokenChanged);
+    }
+    document.addEventListener("visibilitychange", onVisibility);
 
     return () => {
       isMounted = false;
-      connectionInstance
-        .stop()
-        .catch(() => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener(AUTH_TOKENS_CHANGED_EVENT, onTokenChanged);
+      }
+      document.removeEventListener("visibilitychange", onVisibility);
+      (async () => {
+        try {
+          if (connectionInstance) await connectionInstance.stop();
+        } catch {
           // ignore
-        })
-        .finally(() => {
+        } finally {
           setConnection(null);
-        });
+        }
+      })();
     };
   }, [hubUrl, addNotification]);
 
   const value = useMemo(
     () => ({
       connection,
+      isHubEnabled,
       notifications,
       unreadCount,
       addNotification,
@@ -119,6 +180,7 @@ export const NotificationProvider = ({
     }),
     [
       connection,
+      isHubEnabled,
       notifications,
       unreadCount,
       addNotification,

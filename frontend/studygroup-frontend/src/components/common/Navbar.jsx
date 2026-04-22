@@ -1,123 +1,123 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import { useNotifications } from "../../context/NotificationContext";
 import { ROLES } from "../../utils/constants";
 import NotificationBell from "./NotificationBell";
+import { Menu, X, LogOut, Users, Shield } from "lucide-react";
 
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const { unreadCount } = useNotifications();
   const navigate = useNavigate();
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 8);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
 
   const handleLogout = async () => {
     await logout();
     navigate("/login");
   };
 
+  const navLinks = [
+    { to: "/groups", label: "Browse Groups", icon: <Users size={16} aria-hidden />, show: true },
+    { to: "/my-groups", label: "My Groups", show: isAuthenticated && user?.role === ROLES.STUDENT },
+    { to: "/dashboard", label: "Dashboard", show: isAuthenticated && user?.role === ROLES.GROUP_CREATOR },
+    { to: "/admin", label: "Admin", show: isAuthenticated && user?.role === ROLES.ADMIN, icon: <Shield size={16} aria-hidden /> },
+  ];
+
+  const visibleLinks = navLinks.filter((l) => l.show);
+
   return (
-    <nav style={styles.nav}>
-      {/* ─── Logo ─────────────────────────────── */}
-      <Link to="/" style={styles.logo}>
-        StudyGroup
-      </Link>
+    <nav className={`navbar${scrolled ? " navbar--scrolled" : ""}`} role="navigation" aria-label="Main">
+      <div className="navbar__inner">
+        <Link to="/" className="navbar__logo">
+          <span className="navbar__logo-icon" aria-hidden>📚</span>
+          <span className="navbar__logo-text">StudyGroup</span>
+        </Link>
 
-      {/* ─── Desktop links ────────────────────── */}
-      <div style={styles.links}>
-        <Link to="/groups" style={styles.link}>Browse Groups</Link>
+        <div className="navbar__links">
+          {visibleLinks.map((link) => (
+            <Link key={link.to} to={link.to} className="navbar__link">
+              {link.icon} {link.label}
+            </Link>
+          ))}
+        </div>
 
-        {/* Student links */}
-        {isAuthenticated && user?.role === ROLES.STUDENT && (
-          <Link to="/my-groups" style={styles.link}>My Groups</Link>
-        )}
+        <div className="navbar__right">
+          {isAuthenticated && <NotificationBell unreadCount={unreadCount} />}
 
-        {/* Creator links */}
-        {isAuthenticated && user?.role === ROLES.GROUP_CREATOR && (
-          <Link to="/dashboard" style={styles.link}>Dashboard</Link>
-        )}
+          <div className="navbar__actions-desktop">
+            {isAuthenticated ? (
+              <div className="navbar__user">
+                <span className="navbar__username" title={user?.fullName || user?.email}>
+                  {user?.fullName?.split(" ")[0] || user?.email?.split("@")[0]}
+                </span>
+                <button type="button" onClick={handleLogout} className="navbar__logout">
+                  <LogOut size={16} aria-hidden />
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <div className="navbar__auth">
+                <Link to="/login" className="navbar__link-login">
+                  Login
+                </Link>
+                <Link to="/register" className="navbar__link-register">
+                  Register
+                </Link>
+              </div>
+            )}
+          </div>
 
-        {/* Admin links */}
-        {isAuthenticated && user?.role === ROLES.ADMIN && (
-          <Link to="/admin" style={styles.link}>Admin Panel</Link>
-        )}
+          <button
+            type="button"
+            className="navbar__menu-btn"
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-expanded={menuOpen}
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+          >
+            {menuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
       </div>
 
-      {/* ─── Right side ───────────────────────── */}
-      <div style={styles.right}>
-        {isAuthenticated ? (
-          <>
-            <NotificationBell unreadCount={unreadCount} />
-            <span style={styles.username}>{user?.fullName || user?.email}</span>
-            <button onClick={handleLogout} style={styles.logoutBtn}>
-              Logout
+      {menuOpen && (
+        <div className="navbar__drawer" id="nav-drawer">
+          {visibleLinks.map((link) => (
+            <Link key={link.to} to={link.to} className="navbar__link" onClick={() => setMenuOpen(false)}>
+              {link.icon} {link.label}
+            </Link>
+          ))}
+          {isAuthenticated ? (
+            <button type="button" onClick={handleLogout} className="navbar__logout" style={{ width: "100%" }}>
+              <LogOut size={16} aria-hidden />
+              Sign out
             </button>
-          </>
-        ) : (
-          <>
-            <Link to="/login" style={styles.link}>Login</Link>
-            <Link to="/register" style={styles.registerBtn}>Register</Link>
-          </>
-        )}
-      </div>
+          ) : (
+            <>
+              <Link to="/login" className="navbar__link" onClick={() => setMenuOpen(false)}>
+                Login
+              </Link>
+              <Link to="/register" className="navbar__link-register" onClick={() => setMenuOpen(false)} style={{ marginTop: "0.5rem" }}>
+                Register
+              </Link>
+            </>
+          )}
+        </div>
+      )}
     </nav>
   );
 };
 
-const styles = {
-  nav: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "0 24px",
-    height: "60px",
-    background: "#ffffff",
-    borderBottom: "1px solid #e5e7eb",
-    position: "sticky",
-    top: 0,
-    zIndex: 100,
-  },
-  logo: {
-    fontWeight: "700",
-    fontSize: "20px",
-    color: "#4f46e5",
-    textDecoration: "none",
-  },
-  links: {
-    display: "flex",
-    gap: "24px",
-  },
-  link: {
-    color: "#374151",
-    textDecoration: "none",
-    fontSize: "15px",
-  },
-  right: {
-    display: "flex",
-    alignItems: "center",
-    gap: "16px",
-  },
-  username: {
-    fontSize: "14px",
-    color: "#6b7280",
-  },
-  logoutBtn: {
-    background: "none",
-    border: "1px solid #e5e7eb",
-    borderRadius: "6px",
-    padding: "6px 14px",
-    cursor: "pointer",
-    fontSize: "14px",
-    color: "#374151",
-  },
-  registerBtn: {
-    background: "#4f46e5",
-    color: "#ffffff",
-    padding: "7px 16px",
-    borderRadius: "6px",
-    textDecoration: "none",
-    fontSize: "14px",
-  },
-};
-
-export default Navbar; 
+export default Navbar;

@@ -3,6 +3,10 @@ import React, { useMemo } from "react";
 const GroupFilters = ({
   subject,
   onChangeSubject,
+  location,
+  onChangeLocation,
+  meetingTime,
+  onChangeMeetingTime,
   subjects = [],
   disabled = false,
   onClear,
@@ -15,74 +19,54 @@ const GroupFilters = ({
   }, [subjects]);
 
   return (
-    <div style={styles.wrap}>
-      <label style={styles.label}>
-        Subject
+    <div className="flex gap-4 items-center" style={{ flexWrap: "wrap", width: "100%" }}>
+      <div className="form-group" style={{ margin: 0, flex: 1, minWidth: "150px" }}>
         <select
           value={subject || ""}
           onChange={(e) => onChangeSubject?.(e.target.value)}
           disabled={disabled}
-          style={styles.select}
+          className="form-select"
         >
-          <option value="">All</option>
+          <option value="">All Subjects</option>
           {options.map((s) => (
             <option key={s} value={s}>
               {s}
             </option>
           ))}
         </select>
-      </label>
+      </div>
+
+      <div className="form-group" style={{ margin: 0, flex: 1, minWidth: "150px" }}>
+        <input
+          placeholder="Filter by Location..."
+          value={location || ""}
+          onChange={(e) => onChangeLocation?.(e.target.value)}
+          disabled={disabled}
+          className="form-input"
+        />
+      </div>
+
+      <div className="form-group" style={{ margin: 0, flex: 1, minWidth: "150px" }}>
+        <input
+          placeholder="Filter by Time..."
+          value={meetingTime || ""}
+          onChange={(e) => onChangeMeetingTime?.(e.target.value)}
+          disabled={disabled}
+          className="form-input"
+        />
+      </div>
 
       <button
         type="button"
         onClick={() => onClear?.()}
         disabled={disabled}
-        style={styles.clearBtn}
+        className="btn btn-secondary"
       >
-        Clear
+        Clear Filters
       </button>
     </div>
   );
 };
 
-const styles = {
-  wrap: {
-    display: "flex",
-    alignItems: "flex-end",
-    justifyContent: "space-between",
-    gap: "12px",
-    flexWrap: "wrap",
-  },
-  label: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px",
-    fontSize: "12px",
-    fontWeight: "700",
-    color: "#374151",
-    minWidth: "220px",
-  },
-  select: {
-    border: "1px solid #e5e7eb",
-    borderRadius: "10px",
-    padding: "10px 12px",
-    fontSize: "14px",
-    background: "#ffffff",
-    outline: "none",
-  },
-  clearBtn: {
-    background: "#ffffff",
-    border: "1px solid #e5e7eb",
-    borderRadius: "10px",
-    padding: "10px 14px",
-    cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: "700",
-    color: "#374151",
-    whiteSpace: "nowrap",
-  },
-};
-
 export default GroupFilters;
-
  

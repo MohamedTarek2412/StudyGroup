@@ -1,79 +1,42 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { Heart } from "lucide-react";
 
 const Footer = () => {
   return (
-    <footer style={styles.footer}>
-      <div style={styles.container}>
-        {/* ─── Brand ──────────────────────── */}
-        <div>
-          <span style={styles.brand}>StudyGroup</span>
-          <p style={styles.tagline}>Collaborative learning for everyone.</p>
+    <footer className="site-footer" role="contentinfo">
+      <div className="site-footer__inner">
+        <div className="site-footer__brand">
+          <div className="site-footer__brand-title">
+            <span className="site-footer__icon" aria-hidden>📚</span>
+            <span className="site-footer__name">StudyGroup</span>
+          </div>
+          <p className="site-footer__tag">Collaborative learning: find groups, discuss, and share study materials in one place.</p>
         </div>
 
-        {/* ─── Links ──────────────────────── */}
-        <div style={styles.links}>
-          <Link to="/groups" style={styles.link}>Browse Groups</Link>
-          <Link to="/register" style={styles.link}>Join Us</Link>
-          <Link to="/login" style={styles.link}>Login</Link>
+        <div className="site-footer__cols">
+          <div className="site-footer__group">
+            <h4>Explore</h4>
+            <Link to="/">Home</Link>
+            <Link to="/groups">Browse groups</Link>
+          </div>
+          <div className="site-footer__group">
+            <h4>Account</h4>
+            <Link to="/register">Register</Link>
+            <Link to="/login">Login</Link>
+          </div>
         </div>
       </div>
 
-      {/* ─── Bottom bar ─────────────────── */}
-      <div style={styles.bottom}>
-        <span style={styles.copy}>
-          © {new Date().getFullYear()} StudyGroup. All rights reserved.
-        </span>
+      <div className="site-footer__bottom">
+        <span>© {new Date().getFullYear()} StudyGroup</span>
+        <span aria-hidden>·</span>
+        <span>Made with</span>
+        <Heart size={12} style={{ color: "#f87171", flexShrink: 0 }} aria-hidden />
+        <span>for students</span>
       </div>
     </footer>
   );
 };
 
-const styles = {
-  footer: {
-    background: "#f9fafb",
-    borderTop: "1px solid #e5e7eb",
-    marginTop: "auto",
-  },
-  container: {
-    maxWidth: "1100px",
-    margin: "0 auto",
-    padding: "32px 24px",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    flexWrap: "wrap",
-    gap: "24px",
-  },
-  brand: {
-    fontWeight: "700",
-    fontSize: "18px",
-    color: "#4f46e5",
-  },
-  tagline: {
-    marginTop: "6px",
-    fontSize: "13px",
-    color: "#9ca3af",
-  },
-  links: {
-    display: "flex",
-    gap: "24px",
-    alignItems: "center",
-  },
-  link: {
-    fontSize: "14px",
-    color: "#6b7280",
-    textDecoration: "none",
-  },
-  bottom: {
-    borderTop: "1px solid #e5e7eb",
-    padding: "14px 24px",
-    textAlign: "center",
-  },
-  copy: {
-    fontSize: "12px",
-    color: "#9ca3af",
-  },
-};
-
-export default Footer; 
+export default Footer;

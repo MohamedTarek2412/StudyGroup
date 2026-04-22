@@ -8,6 +8,9 @@ export const TOKEN_STORAGE_KEYS = {
   REFRESH_TOKEN: "studygroup_refresh_token",
 };
 
+// Used by long-lived client features (e.g. SignalR) to re-bind when tokens change
+export const AUTH_TOKENS_CHANGED_EVENT = "studygroup:auth-tokens-changed";
+
 const safeStorageOp = (operation, fallback = null) => {
   if (!DEFAULT_STORAGE) return fallback;
 
@@ -30,6 +33,14 @@ export const setTokens = ({ accessToken, refreshToken }) => {
       storage.setItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
     }
   });
+
+  if (isBrowser) {
+    try {
+      window.dispatchEvent(new Event(AUTH_TOKENS_CHANGED_EVENT));
+    } catch {
+      // ignore
+    }
+  }
 };
 
 export const getAccessToken = () =>
@@ -49,6 +60,14 @@ export const clearTokens = () => {
     storage.removeItem(TOKEN_STORAGE_KEYS.ACCESS_TOKEN);
     storage.removeItem(TOKEN_STORAGE_KEYS.REFRESH_TOKEN);
   });
+
+  if (isBrowser) {
+    try {
+      window.dispatchEvent(new Event(AUTH_TOKENS_CHANGED_EVENT));
+    } catch {
+      // ignore
+    }
+  }
 };
 
 export const isAuthenticated = () => {

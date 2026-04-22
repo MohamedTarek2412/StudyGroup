@@ -17,6 +17,7 @@ import RegisterPage from "../pages/RegisterPage";
 import BrowseGroupsPage from "../pages/BrowseGroupsPage";
 import GroupDetailPage from "../pages/GroupDetailPage";
 import GroupDiscussionPage from "../pages/GroupDiscussionPage";
+import StudentMyGroupsPage from "../pages/StudentMyGroupsPage";
 import CreatorDashboardPage from "../pages/CreatorDashboardPage";
 import CreateGroupPage from "../pages/CreateGroupPage";
 import EditGroupPage from "../pages/EditGroupPage";
@@ -29,32 +30,34 @@ const AppRouter = () => {
       <AuthProvider>
         <NotificationProvider>
 
-          <div style={styles.layout}>
+          <div className="app-shell">
             <Navbar />
 
-            <main style={styles.main}>
+            <main className="app-main">
               <Routes>
 
                 {/* ─── Public routes ──────────────────────────── */}
                 <Route path="/" element={<HomePage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
+                <Route path="/groups" element={<BrowseGroupsPage />} />
 
-                {/* ─── Student routes (login required) ────────── */}
                 <Route
-                  path="/groups"
+                  path="/my-groups"
                   element={
                     <ProtectedRoute>
-                      <BrowseGroupsPage />
+                      <RoleGuard roles={ROLES.STUDENT} redirectTo="/groups">
+                        <StudentMyGroupsPage />
+                      </RoleGuard>
                     </ProtectedRoute>
                   }
                 />
+
+                {/* ─── Student routes (login required) ────────── */}
                 <Route
                   path="/groups/:id"
                   element={
-                    <ProtectedRoute>
-                      <GroupDetailPage />
-                    </ProtectedRoute>
+                    <GroupDetailPage />
                   }
                 />
                 <Route
@@ -125,18 +128,4 @@ const AppRouter = () => {
   );
 };
 
-const styles = {
-  layout: {
-    display: "flex",
-    flexDirection: "column",
-    minHeight: "100vh",
-  },
-  main: {
-    flex: 1,
-    maxWidth: "1100px",
-    width: "100%",
-    margin: "0 auto",
-    padding: "24px 16px",
-  },
-};
-export default AppRouter; 
+export default AppRouter;
