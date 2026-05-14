@@ -86,7 +86,7 @@ const RegisterForm = () => {
           name="fullName"
           value={formData.fullName}
           onChange={handleChange}
-          placeholder="John Doe"
+          placeholder="ahmed"
           required
           className="form-input"
           autoComplete="name"
@@ -101,7 +101,7 @@ const RegisterForm = () => {
           name="email"
           value={formData.email}
           onChange={handleChange}
-          placeholder="john@example.com"
+          placeholder="ahmed@example.com"
           required
           className="form-input"
           autoComplete="email"
